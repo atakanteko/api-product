@@ -19,55 +19,51 @@ const unknownEndpoint = (request, response) => {
 app.use(express.json());
 app.use(requestLogger);
 
-let { products } = require("./data.js");
+let { notes } = require("./data.js");
 
 const generateId = () => {
-  const maxId =
-    products.length > 0 ? Math.max(...products.map((n) => n.id)) : 0;
+  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
   return maxId + 1;
 };
 
-app.get("/api/products", (req, resp) => {
-  resp.json(products);
+app.get("/api/notes", (req, resp) => {
+  resp.json(notes);
 });
 
-app.get("/api/products/:id", (req, resp) => {
+app.get("/api/notes/:id", (req, resp) => {
   const { id } = req.params;
-  const product = products.find((note) => note.id === Number(id));
-  if (product) {
-    resp.json(product);
+  const note = notes.find((note) => note.id === Number(id));
+  if (note) {
+    resp.json(note);
   } else {
     resp.status(404).end();
   }
 });
 
-app.delete("/api/products/:id", (request, response) => {
+app.delete("/api/notes/:id", (request, response) => {
   const id = Number(request.params.id);
-  const filteredProducts = products.filter((product) => product.id !== id);
-  console.log(filteredProducts);
+  const filteredNotes = notes.filter((note) => note.id !== id);
+  console.log(filteredNotes);
   response.status(204).end();
 });
 
-app.post("/api/products", (request, response) => {
+app.post("/api/notes", (request, response) => {
   const body = request.body;
   console.log(body);
-  if (!body.title) {
+  if (!body.content) {
     return response.status(400).json({
       error: "content missing",
     });
   }
 
-  const product = {
+  const note = {
+    content: body.content,
+    important: body.important || false,
     id: generateId(),
-    title: body.title,
-    description: body.description,
-    price: body.price,
-    stock: body.stock,
-    thumbnail: "https://i.dummyjson.com/data/products/1/thumbnail.jpg",
   };
 
-  products = products.concat(product);
-  response.json(product);
+  notes = notes.concat(note);
+  response.json(note);
 });
 
 app.use(unknownEndpoint);
