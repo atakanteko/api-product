@@ -1,9 +1,22 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
 
+const Note = require("./models/note");
+
 app.use(cors());
 app.use(express.static("dist"));
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
 
 const requestLogger = (request, response, next) => {
   console.log("Method:", request.method);
@@ -22,23 +35,25 @@ app.use(requestLogger);
 
 let { notes } = require("./data.js");
 
-const generateId = () => {
-  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
-  return maxId + 1;
-};
-
 app.get("/api/notes", (req, resp) => {
-  resp.json(notes);
+  Note.find({}).then((notes) => {
+    resp.json(notes);
+  });
 });
 
-app.get("/api/notes/:id", (req, resp) => {
-  const { id } = req.params;
-  const note = notes.find((note) => note.id === Number(id));
-  if (note) {
-    resp.json(note);
-  } else {
-    resp.status(404).end();
-  }
+app.get("/api/notes/:id", (request, response, next) => {
+  Note.findById(request.params.id)
+    .then((note) => {
+      if (note) {
+        response.json(note);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      next(error);
+    });
 });
 
 app.delete("/api/notes/:id", (request, response) => {
@@ -50,24 +65,25 @@ app.delete("/api/notes/:id", (request, response) => {
 
 app.post("/api/notes", (request, response) => {
   const body = request.body;
-  console.log(body);
+
   if (!body.content) {
     return response.status(400).json({
       error: "content missing",
     });
   }
 
-  const note = {
+  const note = new Note({
     content: body.content,
     important: body.important || false,
-    id: generateId(),
-  };
+  });
 
-  notes = notes.concat(note);
-  response.json(note);
+  note.save().then((result) => {
+    response.json(note);
+  });
 });
 
 app.use(unknownEndpoint);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT);
