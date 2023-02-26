@@ -35,8 +35,6 @@ const unknownEndpoint = (request, response) => {
 app.use(express.json());
 app.use(requestLogger);
 
-let { notes } = require("./data.js");
-
 app.get("/api/notes", (req, resp) => {
   Note.find({}).then((notes) => {
     resp.json(notes);
@@ -74,6 +72,18 @@ app.put("/api/notes/:id", (request, response, next) => {
     { content, important },
     { new: true, runValidators: true, context: "query" }
   )
+    .then((updatedNote) => {
+      response.json(updatedNote);
+    })
+    .catch((error) => next(error));
+});
+
+app.patch("/api/notes/:id", (request, response, next) => {
+  const id = request.params.id;
+  const update = { important: request.body.important };
+  const options = { new: true };
+
+  Note.findByIdAndUpdate(id, update, options)
     .then((updatedNote) => {
       response.json(updatedNote);
     })
