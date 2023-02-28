@@ -9,6 +9,8 @@ const noteSchema = new mongoose.Schema({
   important: Boolean,
   user: {
     type: mongoose.Schema.Types.ObjectId,
+    // ref represents User model which comes from
+    // mongoose.model("User", userSchema); line from models/user.js
     ref: "User",
   },
 });

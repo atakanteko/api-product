@@ -3,9 +3,11 @@ const Note = require("../models/note");
 const User = require("../models/user");
 
 notesRouter.get("/", (req, resp) => {
-  Note.find({}).then((notes) => {
-    resp.json(notes);
-  });
+  Note.find({})
+    .populate("user", { username: 1, name: 1 })
+    .then((notes) => {
+      resp.json(notes);
+    });
 });
 
 notesRouter.get("/:id", (request, response, next) => {
