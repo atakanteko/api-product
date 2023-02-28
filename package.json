@@ -7,7 +7,8 @@
     "start": "nodemon app.js",
     "build:ui": "rm -rf dist && cd ../../srw-todo/swr-todo/ && npm run build && cp -r dist ../../node-tutorial/basics/",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ."
   },
   "author": "",
   "license": "ISC",
@@ -17,5 +18,8 @@
     "express": "^4.18.2",
     "mongoose": "^6.10.0",
     "nodemon": "^2.0.20"
+  },
+  "devDependencies": {
+    "eslint": "^8.35.0"
   }
 }
